@@ -3,7 +3,11 @@ package android.lifeistech.com.cardgame;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -11,13 +15,17 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     TextView playerHPText, enemyHPText;
+    FrameLayout[] playerLayoutList = new FrameLayout[6];
     TextView[] playerAPTextList = new TextView[6];
     TextView[] playerBPTextList = new TextView[6];
     ImageView[] playerImageList = new ImageView[6];
+    LinearLayout[] playerShadowList = new LinearLayout[6];
 
+    FrameLayout[] enemyLayoutList = new FrameLayout[4];
     TextView[] enemyAPTextList = new TextView[4];
     TextView[] enemyBPTextList = new TextView[4];
     ImageView[] enemyImageList = new ImageView[4];
+    LinearLayout[] enemyShadowList = new LinearLayout[4];
 
     ListView listView;
 
@@ -25,7 +33,11 @@ public class MainActivity extends AppCompatActivity {
     Character[] p1CharacterList = new Character[6];
     Character[] p2CharacterList = new Character[6];
 
+
+    int[] p1TapHistory = new int[4];
+    int[] p2TapHistory = new int[4];
     int nextPlayer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,20 +50,25 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < 6; i++) {
             int id = getResources().getIdentifier("characterP" + (i + 1), "id", getPackageName());
+            playerLayoutList[i] = (FrameLayout) findViewById(id);
             playerAPTextList[i] = (TextView) findViewById(id).findViewById(R.id.APTextView);
             playerBPTextList[i] = (TextView) findViewById(id).findViewById(R.id.BPTextView);
             playerImageList[i] = (ImageView) findViewById(id).findViewById(R.id.imageView);
+            playerShadowList[i] = (LinearLayout) findViewById(id).findViewById(R.id.shadow);
 
         }
 
         for (int i = 0; i < 4; i++) {
             int id = getResources().getIdentifier("characterE" + (i + 1), "id", getPackageName());
+            enemyLayoutList[i] = (FrameLayout) findViewById(id);
             enemyAPTextList[i] = (TextView) findViewById(id).findViewById(R.id.APTextView);
             enemyBPTextList[i] = (TextView) findViewById(id).findViewById(R.id.BPTextView);
             enemyImageList[i] = (ImageView) findViewById(id).findViewById(R.id.imageView);
+            enemyShadowList[i] = (LinearLayout) findViewById(id).findViewById(R.id.shadow);
+
         }
 
-
+        //インスタンス生成
         p1CharacterList[0] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター");
         p1CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター");
         p1CharacterList[2] = new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター");
@@ -73,6 +90,27 @@ public class MainActivity extends AppCompatActivity {
 
 
         renderText();
+
+
+//        for (int i = 0; i < 6; i++) {
+//            final int num = i;
+//
+//            playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    playerAPTextList[num].setText("334");
+//                }
+//            });
+//
+//            //shadowがOnの時は常にtrueにしタッチできないようにする
+//            playerShadowList[num].setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    return true;
+//                }
+//            });
+//
+//        }
 
     }
 
@@ -99,12 +137,31 @@ public class MainActivity extends AppCompatActivity {
                 playerBPTextList[i].setText(p1CharacterList[i].getBP() + "");
                 playerImageList[i].setImageResource(p1CharacterList[i].getResID());
                 playerImageList[i].setBackgroundColor(getPropColor(p1CharacterList[i].getPropID()));
+//                for (int j = 0; j < 6; j++) {
+//                    final int num = j;
+//
+//                    if (p1TapHistory[num] == 1) {
+//                        playerShadowList[num].setVisibility(View.VISIBLE);
+//                    }
+//
+//                    playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            playerAPTextList[num].setText("334");
+//                        }
+//                    });
+//
+//
+//
+//                }
+
 
                 if (i < 4) {
                     enemyAPTextList[i].setText(p2CharacterList[i].getAP() + "");
                     enemyBPTextList[i].setText(p2CharacterList[i].getBP() + "");
                     enemyImageList[i].setImageResource(p2CharacterList[i].getResID());
                     enemyImageList[i].setBackgroundColor(getPropColor(p2CharacterList[i].getPropID()));
+
                 }
             }
             playerHPText.setText(player1.getHP() + "");
