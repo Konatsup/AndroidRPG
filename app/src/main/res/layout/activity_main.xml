@@ -45,14 +45,7 @@
             android:orientation="horizontal">
 
             <include
-                android:id="@+id/characterE1"
-                layout="@layout/character"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <include
-                android:id="@+id/characterE2"
+                android:id="@+id/characterE4"
                 layout="@layout/character"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -66,7 +59,14 @@
                 android:layout_weight="1" />
 
             <include
-                android:id="@+id/characterE4"
+                android:id="@+id/characterE2"
+                layout="@layout/character"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/characterE1"
                 layout="@layout/character"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
