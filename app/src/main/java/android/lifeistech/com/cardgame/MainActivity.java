@@ -5,11 +5,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout[] enemyShadowList = new LinearLayout[4];
 
     ListView listView;
+    ArrayAdapter<String> adapter;
 
     Player player1, player2;
     Character[] p1CharacterList = new Character[6];
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     int[] p2TapHistory = new int[4];
     int nextPlayer;
 
+    ArrayList<String> logList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         enemyHPText = (TextView) findViewById(R.id.enemyHPText);
         listView = (ListView) findViewById(R.id.listView);
 
+        adapter = new ArrayAdapter(this, R.layout.log);
+
+        listView.setAdapter(adapter);
         for (int i = 0; i < 6; i++) {
             int id = getResources().getIdentifier("characterP" + (i + 1), "id", getPackageName());
             playerLayoutList[i] = (FrameLayout) findViewById(id);
@@ -91,26 +99,44 @@ public class MainActivity extends AppCompatActivity {
 
         renderText();
 
+        logList.add("aaaaaaa");
+        logList.add("iiiiiii");
+        logList.add("uuuuuuu");
+        logList.add("eeeeeee");
+        logList.add("ooooooo");
+        logList.add("aaaaaaa");
+        logList.add("iiiiiii");
+        logList.add("uuuuuuu");
+        logList.add("eeeeeee");
+        logList.add("ooooooo");
 
-//        for (int i = 0; i < 6; i++) {
-//            final int num = i;
-//
-//            playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
+
+        for (String str: logList){
+            // ArrayAdapterにitemを追加する
+            adapter.add(str);
+        }
+
+        for (int i = 0; i < 6; i++) {
+            final int num = i;
+
+            playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 //                    playerAPTextList[num].setText("334");
-//                }
-//            });
-//
-//            //shadowがOnの時は常にtrueにしタッチできないようにする
-//            playerShadowList[num].setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    return true;
-//                }
-//            });
-//
-//        }
+                    addLog("334");
+
+                }
+            });
+
+            //shadowがOnの時は常にtrueにしタッチできないようにする
+            playerShadowList[num].setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
+
+        }
 
     }
 
@@ -209,6 +235,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return color;
+    }
+
+    void addLog(String text) {
+        adapter.add(text);
+        listView.setSelection(logList.size());
     }
 
 
