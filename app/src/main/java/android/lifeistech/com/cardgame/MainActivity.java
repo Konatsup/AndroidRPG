@@ -123,7 +123,12 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 //                    playerAPTextList[num].setText("334");
+                    if(num >= 4){
+                        //入れ替えの処理
+                    }
                     addLog("334");
+                    nextPlayer = nextPlayer==0? 1:0;
+                    renderText();
 
                 }
             });
