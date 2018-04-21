@@ -11,4 +11,5 @@ public class Player {
         this.HP = HP;
         this.skillID = skillID;
     }
+
 }
