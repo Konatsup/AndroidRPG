@@ -11,14 +11,16 @@ public class Character {
     int propID;//属性
     int resID;//画像のID
     String name;//キャラの名前
+    boolean canTouch;
 
-    Character(int HP, int AP, int BP, int propID, int resID, String name) {
+    Character(int HP, int AP, int BP, int propID, int resID, String name, boolean canTouch) {
         this.HP = HP;
         this.AP = AP;
         this.BP = BP;
         this.propID = propID;
         this.resID = resID;
         this.name = name;
+        this.canTouch = canTouch;
     }
 
 
@@ -68,6 +70,14 @@ public class Character {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean getCanTouch(){
+        return this.canTouch;
+    }
+
+    public void setCanTouch(boolean canTouch){
+        this.canTouch = canTouch;
     }
 
 

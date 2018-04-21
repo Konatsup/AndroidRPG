@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     int[] p1TapHistory = new int[4];
     int[] p2TapHistory = new int[4];
-    int nextPlayer;
+    int nowPlayer;
 
     ArrayList<String> logList = new ArrayList<>();
 
@@ -77,28 +77,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //インスタンス生成
-        p1CharacterList[0] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター");
-        p1CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター");
-        p1CharacterList[2] = new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター");
-        p1CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター");
-        p1CharacterList[4] = new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター");
-        p1CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター");
+        p1CharacterList[0] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
+        p1CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", true);
+        p1CharacterList[2] = new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", true);
+        p1CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", true);
+        p1CharacterList[4] = new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター", true);
+        p1CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
 
-        p2CharacterList[0] = new Character(10, 5, 4, 1, R.drawable.fire, "炎のキャラクター");
-        p2CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター");
-        p2CharacterList[2] = new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター");
-        p2CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター");
-        p2CharacterList[4] = new Character(10, 5, 4, 5, R.drawable.dark, "のキャラクター");
-        p2CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター");
+        p2CharacterList[0] = new Character(10, 5, 4, 1, R.drawable.fire, "炎のキャラクター", true);
+        p2CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", true);
+        p2CharacterList[2] = new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", true);
+        p2CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", true);
+        p2CharacterList[4] = new Character(10, 5, 4, 5, R.drawable.dark, "のキャラクター", true);
+        p2CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
 
         player1 = new Player(1, sumPlayerHP(1), 1);
         player2 = new Player(2, sumPlayerHP(2), 2);
 
-        nextPlayer = 1;
-
+        nowPlayer = 1;
 
         renderText();
 
+
         logList.add("aaaaaaa");
         logList.add("iiiiiii");
         logList.add("uuuuuuu");
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         logList.add("ooooooo");
 
 
-        for (String str: logList){
+        for (String str : logList) {
             // ArrayAdapterにitemを追加する
             adapter.add(str);
         }
@@ -123,11 +123,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 //                    playerAPTextList[num].setText("334");
-                    if(num >= 4){
-                        //入れ替えの処理
+
+                    renderShadow();
+                    if (num >= 4) {
+
                     }
                     addLog("334");
-                    nextPlayer = nextPlayer==0? 1:0;
+                    nowPlayer = nowPlayer == 0 ? 1 : 0;
                     renderText();
 
                 }
@@ -162,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
     void renderText() {
 
-        if (nextPlayer == 1) {
+        if (nowPlayer == 1) {
             for (int i = 0; i < 6; i++) {
                 playerAPTextList[i].setText(p1CharacterList[i].getAP() + "");
                 playerBPTextList[i].setText(p1CharacterList[i].getBP() + "");
@@ -246,6 +248,43 @@ public class MainActivity extends AppCompatActivity {
         adapter.add(text);
         listView.setSelection(logList.size());
     }
+
+    void renderShadow() {
+        if (nowPlayer == 1) {
+            for (int i = 0; i < 6; i++) {
+                if (p1CharacterList[i].getCanTouch()) {
+                    playerShadowList[i].setVisibility(View.VISIBLE);
+                } else {
+                    playerShadowList[i].setVisibility(View.INVISIBLE);
+                }
+
+                if (i < 4) {
+                    if (p2CharacterList[i].getCanTouch()) {
+                        enemyShadowList[i].setVisibility(View.VISIBLE);
+                    } else {
+                        enemyShadowList[i].setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < 6; i++) {
+                if (p2CharacterList[i].getCanTouch()) {
+                    playerShadowList[i].setVisibility(View.VISIBLE);
+                } else {
+                    playerShadowList[i].setVisibility(View.INVISIBLE);
+                }
+
+                if (i < 4) {
+                    if (p1CharacterList[i].getCanTouch()) {
+                        enemyShadowList[i].setVisibility(View.VISIBLE);
+                    } else {
+                        enemyShadowList[i].setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+        }
+    }
+
 
 
 }
