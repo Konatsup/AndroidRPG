@@ -38,9 +38,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Character> p1CharacterList = new ArrayList<>();
     ArrayList<Character> p2CharacterList = new ArrayList<>();
 
-
-    int[] p1TapHistory = new int[4];
-    int[] p2TapHistory = new int[4];
     int nowPlayer;
     GameState gameState; //キャラクタータップ時の状態 1~
     int selectCharacterNum;
@@ -90,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
         p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
 
-        p2CharacterList.add(new Character(10, 5, 4, 1, R.drawable.fire, "炎のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 2, 1, R.drawable.fire, "炎のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
         p2CharacterList.add(new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
-        p2CharacterList.add(new Character(10, 5, 4, 5, R.drawable.dark, "のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 2, 5, R.drawable.dark, "のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
 
         player1 = new Player(1, sumPlayerHP(1), 1);
@@ -102,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         nowPlayer = 1;
+        selectCharacterNum = 0;
         gameState = GameState.SELECT_ACTION;
 
         changeShadowStates(3);
@@ -175,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
                 enemyLayoutList[num].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        int touchState = getTouchState(num); //
                         switch (gameState) {
                             case SELECT_ACTION:
                                 break;
                             case SELECT_TARGET:
                                 //ダメージ計算
+                                damage(num);
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
@@ -262,6 +260,37 @@ public class MainActivity extends AppCompatActivity {
             }
             playerHPText.setText(player2.getHP() + "");
             enemyHPText.setText(player1.getHP() + "");
+        }
+    }
+
+    void damage(int num) {
+        int damage = 0;
+        if (nowPlayer == 1) {
+            damage = p2CharacterList.get(num).getBP() - p1CharacterList.get(selectCharacterNum).getAP();
+            if (damage < 0) {
+                if( p2CharacterList.get(num).getBP() !=0) {
+                    addLog(p2CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
+                    p2CharacterList.get(num).setBP(0);
+                }
+                player2.setHP(player2.getHP() + damage);
+                addLog("プレイヤー2に" + (-1*damage) + "ダメージ");
+            }else{
+                addLog(p2CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
+                p2CharacterList.get(num).setBP(damage);
+            }
+        } else {
+            damage = p1CharacterList.get(num).getBP() - p2CharacterList.get(selectCharacterNum).getAP();
+            if (damage < 0) {
+                if( p1CharacterList.get(num).getBP() !=0) {
+                    addLog(p1CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
+                    p1CharacterList.get(num).setBP(0);
+                }
+                player1.setHP(player1.getHP() + damage);
+                addLog("プレイヤー1に" + (-1*damage) + "ダメージ");
+            }else{
+                addLog(p1CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
+                p1CharacterList.get(num).setBP(damage);
+            }
         }
     }
 
