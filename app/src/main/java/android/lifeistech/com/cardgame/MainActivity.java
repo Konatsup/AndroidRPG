@@ -34,13 +34,16 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter;
 
     Player player1, player2;
-    Character[] p1CharacterList = new Character[6];
-    Character[] p2CharacterList = new Character[6];
+
+    ArrayList<Character> p1CharacterList = new ArrayList<>();
+    ArrayList<Character> p2CharacterList = new ArrayList<>();
 
 
     int[] p1TapHistory = new int[4];
     int[] p2TapHistory = new int[4];
     int nowPlayer;
+    GameState gameState; //キャラクタータップ時の状態 1~
+    int selectCharacterNum;
 
     ArrayList<String> logList = new ArrayList<>();
 
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter(this, R.layout.log);
 
         listView.setAdapter(adapter);
+
         for (int i = 0; i < 6; i++) {
             int id = getResources().getIdentifier("characterP" + (i + 1), "id", getPackageName());
             playerLayoutList[i] = (FrameLayout) findViewById(id);
@@ -77,25 +81,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //インスタンス生成
-        p1CharacterList[0] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
-        p1CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", true);
-        p1CharacterList[2] = new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", true);
-        p1CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", true);
-        p1CharacterList[4] = new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター", true);
-        p1CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
 
-        p2CharacterList[0] = new Character(10, 5, 4, 1, R.drawable.fire, "炎のキャラクター", true);
-        p2CharacterList[1] = new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", true);
-        p2CharacterList[2] = new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", true);
-        p2CharacterList[3] = new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", true);
-        p2CharacterList[4] = new Character(10, 5, 4, 5, R.drawable.dark, "のキャラクター", true);
-        p2CharacterList[5] = new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", true);
+
+        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
+
+        p2CharacterList.add(new Character(10, 5, 4, 1, R.drawable.fire, "炎のキャラクター", false));
+        p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", false));
+        p2CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 4, 5, R.drawable.dark, "のキャラクター", false));
+        p2CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
 
         player1 = new Player(1, sumPlayerHP(1), 1);
         player2 = new Player(2, sumPlayerHP(2), 2);
 
-        nowPlayer = 1;
 
+        nowPlayer = 1;
+        gameState = GameState.SELECT_ACTION;
+
+        changeShadowStates(3);
         renderText();
 
 
@@ -122,16 +131,35 @@ public class MainActivity extends AppCompatActivity {
             playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    playerAPTextList[num].setText("334");
+                    int touchState = getTouchState(num);
+                    switch (gameState) {
+                        case SELECT_ACTION:
 
-                    renderShadow();
-                    if (num >= 4) {
+                            selectCharacterNum = num;
 
+                            changeShadowStates(touchState);
+                            playerShadowList[num].setVisibility(View.INVISIBLE);
+
+                            gameState = GameState.SELECT_TARGET;
+                            break;
+                        case SELECT_TARGET:
+                            changeShadowStates(3);
+                            if (selectCharacterNum == num) {
+                                //キャンセル処理
+                                renderShadowFromActCompleted();
+                            } else {
+                                //自陣とベンチの入れ替え処理
+
+                                //次のターンに移行
+                                nowPlayer = nowPlayer == 1 ? 2 : 1;
+                                renderText();
+                                addLog("プレイヤー" + nowPlayer + "のターン");
+                            }
+                            gameState = GameState.SELECT_ACTION;
+                            break;
+                        default:
+                            break;
                     }
-                    addLog("334");
-                    nowPlayer = nowPlayer == 0 ? 1 : 0;
-                    renderText();
-
                 }
             });
 
@@ -143,6 +171,43 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            if (num < 4) {
+                enemyLayoutList[num].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int touchState = getTouchState(num); //
+                        switch (gameState) {
+                            case SELECT_ACTION:
+                                break;
+                            case SELECT_TARGET:
+                                //ダメージ計算
+
+                                //次のターンに移行
+                                nowPlayer = nowPlayer == 1 ? 2 : 1;
+                                changeShadowStates(3);
+                                renderShadowFromActCompleted();
+                                renderText();
+                                addLog("プレイヤー" + nowPlayer + "のターン");
+                                gameState = GameState.SELECT_ACTION;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                });
+
+                //shadowがOnの時は常にtrueにしタッチできないようにする
+                enemyShadowList[num].setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        return true;
+                    }
+                });
+
+
+            }
+
         }
 
     }
@@ -151,11 +216,11 @@ public class MainActivity extends AppCompatActivity {
         int sum = 0;
         if (id == 1) {
             for (int i = 0; i < 6; i++) {
-                sum += p1CharacterList[i].getHP();
+                sum += p1CharacterList.get(i).getHP();
             }
         } else {
             for (int i = 0; i < 6; i++) {
-                sum += p2CharacterList[i].getHP();
+                sum += p2CharacterList.get(i).getHP();
             }
         }
         return sum;
@@ -166,34 +231,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (nowPlayer == 1) {
             for (int i = 0; i < 6; i++) {
-                playerAPTextList[i].setText(p1CharacterList[i].getAP() + "");
-                playerBPTextList[i].setText(p1CharacterList[i].getBP() + "");
-                playerImageList[i].setImageResource(p1CharacterList[i].getResID());
-                playerImageList[i].setBackgroundColor(getPropColor(p1CharacterList[i].getPropID()));
-//                for (int j = 0; j < 6; j++) {
-//                    final int num = j;
-//
-//                    if (p1TapHistory[num] == 1) {
-//                        playerShadowList[num].setVisibility(View.VISIBLE);
-//                    }
-//
-//                    playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            playerAPTextList[num].setText("334");
-//                        }
-//                    });
-//
-//
-//
-//                }
-
+                playerAPTextList[i].setText(p1CharacterList.get(i).getAP() + "");
+                playerBPTextList[i].setText(p1CharacterList.get(i).getBP() + "");
+                playerImageList[i].setImageResource(p1CharacterList.get(i).getResID());
+                playerImageList[i].setBackgroundColor(getPropColor(p1CharacterList.get(i).getPropID()));
 
                 if (i < 4) {
-                    enemyAPTextList[i].setText(p2CharacterList[i].getAP() + "");
-                    enemyBPTextList[i].setText(p2CharacterList[i].getBP() + "");
-                    enemyImageList[i].setImageResource(p2CharacterList[i].getResID());
-                    enemyImageList[i].setBackgroundColor(getPropColor(p2CharacterList[i].getPropID()));
+                    enemyAPTextList[i].setText(p2CharacterList.get(i).getAP() + "");
+                    enemyBPTextList[i].setText(p2CharacterList.get(i).getBP() + "");
+                    enemyImageList[i].setImageResource(p2CharacterList.get(i).getResID());
+                    enemyImageList[i].setBackgroundColor(getPropColor(p2CharacterList.get(i).getPropID()));
 
                 }
             }
@@ -201,15 +248,15 @@ public class MainActivity extends AppCompatActivity {
             enemyHPText.setText(player2.getHP() + "");
         } else {
             for (int i = 0; i < 6; i++) {
-                playerAPTextList[i].setText(p2CharacterList[i].getAP() + "");
-                playerBPTextList[i].setText(p2CharacterList[i].getBP() + "");
-                playerImageList[i].setImageResource(p2CharacterList[i].getResID());
-                playerImageList[i].setBackgroundColor(getPropColor(p2CharacterList[i].getPropID()));
+                playerAPTextList[i].setText(p2CharacterList.get(i).getAP() + "");
+                playerBPTextList[i].setText(p2CharacterList.get(i).getBP() + "");
+                playerImageList[i].setImageResource(p2CharacterList.get(i).getResID());
+                playerImageList[i].setBackgroundColor(getPropColor(p2CharacterList.get(i).getPropID()));
                 if (i < 4) {
-                    enemyAPTextList[i].setText(p1CharacterList[i].getAP() + "");
-                    enemyBPTextList[i].setText(p1CharacterList[i].getBP() + "");
-                    enemyImageList[i].setImageResource(p1CharacterList[i].getResID());
-                    enemyImageList[i].setBackgroundColor(getPropColor(p1CharacterList[i].getPropID()));
+                    enemyAPTextList[i].setText(p1CharacterList.get(i).getAP() + "");
+                    enemyBPTextList[i].setText(p1CharacterList.get(i).getBP() + "");
+                    enemyImageList[i].setImageResource(p1CharacterList.get(i).getResID());
+                    enemyImageList[i].setBackgroundColor(getPropColor(p1CharacterList.get(i).getPropID()));
 
                 }
             }
@@ -218,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //属性の色を取得する
     int getPropColor(int propId) {
         int color;
         switch (propId) {
@@ -235,7 +283,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 5:
                 color = Color.parseColor("#FF00FF");
-
                 break;
             default:
                 color = Color.parseColor("#000000");
@@ -244,48 +291,71 @@ public class MainActivity extends AppCompatActivity {
         return color;
     }
 
+    int getTouchState(int num) {
+        int state = 0;
+        if (num < 4) {
+            state = 1;
+        } else {
+            state = 2;
+        }
+
+        return state;
+    }
+
     void addLog(String text) {
         adapter.add(text);
+        logList.add(text);
         listView.setSelection(logList.size());
     }
 
-    void renderShadow() {
-        if (nowPlayer == 1) {
-            for (int i = 0; i < 6; i++) {
-                if (p1CharacterList[i].getCanTouch()) {
-                    playerShadowList[i].setVisibility(View.VISIBLE);
-                } else {
-                    playerShadowList[i].setVisibility(View.INVISIBLE);
-                }
-
-                if (i < 4) {
-                    if (p2CharacterList[i].getCanTouch()) {
-                        enemyShadowList[i].setVisibility(View.VISIBLE);
-                    } else {
-                        enemyShadowList[i].setVisibility(View.INVISIBLE);
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < 6; i++) {
-                if (p2CharacterList[i].getCanTouch()) {
-                    playerShadowList[i].setVisibility(View.VISIBLE);
-                } else {
-                    playerShadowList[i].setVisibility(View.INVISIBLE);
-                }
-
-                if (i < 4) {
-                    if (p1CharacterList[i].getCanTouch()) {
-                        enemyShadowList[i].setVisibility(View.VISIBLE);
-                    } else {
-                        enemyShadowList[i].setVisibility(View.INVISIBLE);
-                    }
-                }
+    void renderShadowFromActCompleted() {
+        for (int i = 0; i < 4; i++) {
+            boolean flg = (nowPlayer == 1) ? p1CharacterList.get(i).isActCompleted()
+                    : p2CharacterList.get(i).isActCompleted();
+            if (flg) {
+                playerShadowList[i].setVisibility(View.VISIBLE);
             }
         }
     }
 
+    void changeShadowStates(int touchState) {
+        //1のとき自陣の戦闘、2のとき自陣のベンチ、3のとき敵
+        switch (touchState) {
+            case 1:
+                for (int i = 0; i < 6; i++) {
+                    playerShadowList[i].setVisibility(View.VISIBLE);
+                    if (i < 4) {
+                        enemyShadowList[i].setVisibility(View.INVISIBLE);
+                    }
+                }
+                break;
 
+            case 2:
+                for (int i = 0; i < 6; i++) {
+                    if (i < 4) {
+                        playerShadowList[i].setVisibility(View.INVISIBLE);
+                    } else {
+                        playerShadowList[i].setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
 
+            case 3:
+                for (int i = 0; i < 6; i++) {
+                    playerShadowList[i].setVisibility(View.INVISIBLE);
+                    if (i < 4) {
+                        enemyShadowList[i].setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    public enum GameState {
+        SELECT_ACTION,
+        SELECT_TARGET
+    }
 }
 

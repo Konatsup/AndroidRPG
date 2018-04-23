@@ -11,16 +11,16 @@ public class Character {
     int propID;//属性
     int resID;//画像のID
     String name;//キャラの名前
-    boolean canTouch;
+    boolean actCompleted;
 
-    Character(int HP, int AP, int BP, int propID, int resID, String name, boolean canTouch) {
+    Character(int HP, int AP, int BP, int propID, int resID, String name, boolean actCompleted) {
         this.HP = HP;
         this.AP = AP;
         this.BP = BP;
         this.propID = propID;
         this.resID = resID;
         this.name = name;
-        this.canTouch = canTouch;
+        this.actCompleted = actCompleted;
     }
 
 
@@ -72,12 +72,12 @@ public class Character {
         this.name = name;
     }
 
-    public boolean getCanTouch(){
-        return this.canTouch;
+    public boolean isActCompleted(){
+        return this.actCompleted;
     }
 
-    public void setCanTouch(boolean canTouch){
-        this.canTouch = canTouch;
+    public void setActCompleted(boolean actCompleted){
+        this.actCompleted = actCompleted;
     }
 
 
