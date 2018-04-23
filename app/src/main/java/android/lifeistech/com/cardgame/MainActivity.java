@@ -84,14 +84,14 @@ public class MainActivity extends AppCompatActivity {
         p1CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark, "のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark, "闇のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
 
         p2CharacterList.add(new Character(10, 5, 2, 1, R.drawable.fire, "炎のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
         p2CharacterList.add(new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
-        p2CharacterList.add(new Character(10, 5, 2, 5, R.drawable.dark, "のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 2, 5, R.drawable.dark, "闇のキャラクター", false));
         p2CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
 
         player1 = new Player(1, sumPlayerHP(1), 1);
@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                                 renderShadowFromActCompleted();
                             } else {
                                 //自陣とベンチの入れ替え処理
+                                exchange(num);
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
@@ -268,29 +269,47 @@ public class MainActivity extends AppCompatActivity {
         if (nowPlayer == 1) {
             damage = p2CharacterList.get(num).getBP() - p1CharacterList.get(selectCharacterNum).getAP();
             if (damage < 0) {
-                if( p2CharacterList.get(num).getBP() !=0) {
+                if (p2CharacterList.get(num).getBP() != 0) {
                     addLog(p2CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p2CharacterList.get(num).setBP(0);
                 }
                 player2.setHP(player2.getHP() + damage);
-                addLog("プレイヤー2に" + (-1*damage) + "ダメージ");
-            }else{
+                addLog("プレイヤー2に" + (-1 * damage) + "ダメージ");
+            } else {
                 addLog(p2CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
                 p2CharacterList.get(num).setBP(damage);
             }
         } else {
             damage = p1CharacterList.get(num).getBP() - p2CharacterList.get(selectCharacterNum).getAP();
             if (damage < 0) {
-                if( p1CharacterList.get(num).getBP() !=0) {
+                if (p1CharacterList.get(num).getBP() != 0) {
                     addLog(p1CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p1CharacterList.get(num).setBP(0);
                 }
                 player1.setHP(player1.getHP() + damage);
-                addLog("プレイヤー1に" + (-1*damage) + "ダメージ");
-            }else{
+                addLog("プレイヤー1に" + (-1 * damage) + "ダメージ");
+            } else {
                 addLog(p1CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
                 p1CharacterList.get(num).setBP(damage);
             }
+        }
+    }
+
+    void exchange(int num) {
+
+        Character tmp;
+        if (nowPlayer == 1) {
+            tmp = p1CharacterList.get(selectCharacterNum);
+            p1CharacterList.set(selectCharacterNum, p1CharacterList.get(num));
+            p1CharacterList.set(num, tmp);
+            addLog(p1CharacterList.get(selectCharacterNum).getName()+"が戻り");
+            addLog(p1CharacterList.get(num).getName()+"が召喚されました");
+        } else {
+            tmp = p2CharacterList.get(selectCharacterNum);
+            p2CharacterList.set(selectCharacterNum, p2CharacterList.get(num));
+            p2CharacterList.set(num, tmp);
+            addLog(p2CharacterList.get(selectCharacterNum).getName()+"が戻り");
+            addLog(p2CharacterList.get(num).getName()+"が召喚されました");
         }
     }
 
