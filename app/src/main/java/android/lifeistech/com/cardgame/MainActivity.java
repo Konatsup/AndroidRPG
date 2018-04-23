@@ -106,22 +106,9 @@ public class MainActivity extends AppCompatActivity {
         renderText();
 
 
-        logList.add("aaaaaaa");
-        logList.add("iiiiiii");
-        logList.add("uuuuuuu");
-        logList.add("eeeeeee");
-        logList.add("ooooooo");
-        logList.add("aaaaaaa");
-        logList.add("iiiiiii");
-        logList.add("uuuuuuu");
-        logList.add("eeeeeee");
-        logList.add("ooooooo");
+        addLog("戦闘開始");
+        addLog("プレイヤー" + nowPlayer + "のターン");
 
-
-        for (String str : logList) {
-            // ArrayAdapterにitemを追加する
-            adapter.add(str);
-        }
 
         for (int i = 0; i < 6; i++) {
             final int num = i;
@@ -275,6 +262,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 player2.setHP(player2.getHP() + damage);
                 addLog("プレイヤー2に" + (-1 * damage) + "ダメージ");
+                if(player2.getHP() <=0){
+                    addLog("プレイヤー1の勝利！");
+                }
             } else {
                 addLog(p2CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
                 p2CharacterList.get(num).setBP(damage);
@@ -288,6 +278,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 player1.setHP(player1.getHP() + damage);
                 addLog("プレイヤー1に" + (-1 * damage) + "ダメージ");
+                if(player1.getHP() <=0){
+                    addLog("プレイヤー2の勝利！");
+                }
             } else {
                 addLog(p1CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
                 p1CharacterList.get(num).setBP(damage);
