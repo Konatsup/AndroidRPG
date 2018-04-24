@@ -1,9 +1,7 @@
 package android.lifeistech.com.cardgame;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
-import android.support.v7.app.AlertDialog;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -44,15 +42,18 @@ public class MainActivity extends AppCompatActivity {
 
     int nowPlayer;
     GameState gameState; //キャラクタータップ時の状態 1~
-    int selectCharacterNum;
-    int turnCount;
+    int selectCharacterNum; //何番目のキャラクターが行動したか
+    int turnCount; //何ターン目か
+    int logCount;
 
     ArrayList<String> logList = new ArrayList<>();
+    Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mHandler = new Handler();
 
         playerHPText = (TextView) findViewById(R.id.playerHPText);
         enemyHPText = (TextView) findViewById(R.id.enemyHPText);
@@ -104,16 +105,10 @@ public class MainActivity extends AppCompatActivity {
         nowPlayer = 1; //とりあえずプレイヤー1からスタート
         selectCharacterNum = 0;
         turnCount = 1;
+        logCount = 0;
         gameState = GameState.SELECT_ACTION;
-
-        createPlayerDialog();
-        changeShadowStates(3);
-        renderText();
-
-
         addLog("戦闘開始");
-        addLog("プレイヤー" + nowPlayer + "のターン");
-
+        showPlayerDialog();
 
         for (int i = 0; i < 6; i++) {
             final int num = i;
@@ -143,13 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
-                                createPlayerDialog();
-                                changeShadowStates(3);
-                                renderShadowFromActCompleted();
-                                turnCount++;
-                                resetPhaseIfNeeded();
-                                renderText();
-                                addLog("プレイヤー" + nowPlayer + "のターン");
+                                showPlayerDialog();
                             }
                             gameState = GameState.SELECT_ACTION;
                             break;
@@ -180,13 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
-                                createPlayerDialog();
-                                changeShadowStates(3);
-                                renderShadowFromActCompleted();
-                                turnCount++;
-                                resetPhaseIfNeeded();
-                                renderText();
-                                addLog("プレイヤー" + nowPlayer + "のターン");
+                                showPlayerDialog();
                                 gameState = GameState.SELECT_ACTION;
                                 break;
                             default:
@@ -211,18 +194,41 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    void createPlayerDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Player" + nowPlayer + "のターンです")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // ボタンをクリックしたときの動作
+    class TurnEndThread extends Thread {
+        public void run() {
+            try {
+                //0.5秒停止します。
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
 
-                    }
-                });
-        builder.show();
+            //メインスレッドのメッセージキューにメッセージを登録します。
+            mHandler.post(new Runnable() {
+                //run()の中の処理はメインスレッドで動作されます。
+                public void run() {
+                    renderTurnEndAction();
+                }
+            });
+        }
     }
 
+    void showPlayerDialog() {
+        SampleDialogFragment fragment = SampleDialogFragment.newInstance(nowPlayer,logList,logCount);
+        fragment.show(getFragmentManager(), "tag");
+        TurnEndThread thread = new TurnEndThread();
+        thread.start();
+
+    }
+
+    public void renderTurnEndAction() {
+        changeShadowStates(3);
+        renderShadowFromActCompleted();
+        turnCount++;
+        resetPhaseIfNeeded();
+        renderText();
+        addLog("プレイヤー" + nowPlayer + "のターン");
+        logCount = 0;
+    }
 
     int sumPlayerHP(int id) {
         int sum = 0;
@@ -337,16 +343,14 @@ public class MainActivity extends AppCompatActivity {
             tmp = p1CharacterList.get(selectCharacterNum);
             p1CharacterList.set(selectCharacterNum, p1CharacterList.get(num));
             p1CharacterList.set(num, tmp);
-            addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り");
-            addLog(p1CharacterList.get(num).getName() + "が召喚されました");
+            addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り、"+p1CharacterList.get(num).getName() + "が召喚されました");
             p1CharacterList.get(num).setActCompleted(true);
 
         } else {
             tmp = p2CharacterList.get(selectCharacterNum);
             p2CharacterList.set(selectCharacterNum, p2CharacterList.get(num));
             p2CharacterList.set(num, tmp);
-            addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り");
-            addLog(p2CharacterList.get(num).getName() + "が召喚されました");
+            addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り、"+p2CharacterList.get(num).getName() + "が召喚されました");
             p2CharacterList.get(num).setActCompleted(true);
         }
     }
@@ -417,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
     void addLog(String text) {
         adapter.add(text);
         logList.add(text);
+        logCount++;
         listView.setSelection(logList.size());
     }
 

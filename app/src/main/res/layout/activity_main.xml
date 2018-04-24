@@ -146,9 +146,10 @@
             <ImageView
                 android:id="@+id/skillImageView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="110dp"
+                android:layout_gravity="center"
                 android:layout_weight="2"
-                app:srcCompat="@drawable/ic_launcher_background" />
+                app:srcCompat="@drawable/skill1" />
         </LinearLayout>
 
         <LinearLayout
