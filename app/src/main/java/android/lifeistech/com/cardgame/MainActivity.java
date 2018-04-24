@@ -83,19 +83,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //インスタンス生成
-        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark, "闇のキャラクター", false));
-        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
+        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire1, "炎のキャラクター1", false));
+        p1CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop1, "水のキャラクター1", false));
+        p1CharacterList.add(new Character(5, 3, 2, 3, R.drawable.tree1, "木のキャラクター1", false));
+        p1CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light1, "光のキャラクター1", false));
+        p1CharacterList.add(new Character(5, 3, 2, 5, R.drawable.dark1, "闇のキャラクター1", false));
+        p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire3, "炎のキャラクター3", false));
 
-        p2CharacterList.add(new Character(10, 5, 2, 1, R.drawable.fire, "炎のキャラクター", false));
-        p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
-        p2CharacterList.add(new Character(10, 5, 4, 3, R.drawable.tree, "木のキャラクター", false));
-        p2CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light, "光のキャラクター", false));
-        p2CharacterList.add(new Character(10, 5, 2, 5, R.drawable.dark, "闇のキャラクター", false));
-        p2CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
+        p2CharacterList.add(new Character(10, 5, 2, 1, R.drawable.fire2, "炎のキャラクター2", false));
+        p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop2, "水のキャラクター2", false));
+        p2CharacterList.add(new Character(10, 5, 4, 3, R.drawable.tree2, "木のキャラクター2", false));
+        p2CharacterList.add(new Character(5, 3, 2, 4, R.drawable.light2, "光のキャラクター2", false));
+        p2CharacterList.add(new Character(10, 5, 2, 5, R.drawable.dark2, "闇のキャラクター2", false));
+        p2CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop3, "水のキャラクター3", false));
 
         player1 = new Player(1, sumPlayerHP(1), 1);
         player2 = new Player(2, sumPlayerHP(2), 2);
