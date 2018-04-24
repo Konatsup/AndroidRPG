@@ -1,6 +1,9 @@
 package android.lifeistech.com.cardgame;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -98,11 +101,12 @@ public class MainActivity extends AppCompatActivity {
         player2 = new Player(2, sumPlayerHP(2), 2);
 
 
-        nowPlayer = 1;
+        nowPlayer = 1; //とりあえずプレイヤー1からスタート
         selectCharacterNum = 0;
         turnCount = 1;
         gameState = GameState.SELECT_ACTION;
 
+        createPlayerDialog();
         changeShadowStates(3);
         renderText();
 
@@ -139,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
+                                createPlayerDialog();
                                 changeShadowStates(3);
                                 renderShadowFromActCompleted();
                                 turnCount++;
@@ -175,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
+                                createPlayerDialog();
                                 changeShadowStates(3);
                                 renderShadowFromActCompleted();
                                 turnCount++;
@@ -204,6 +210,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    void createPlayerDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Player" + nowPlayer + "のターンです")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // ボタンをクリックしたときの動作
+
+                    }
+                });
+        builder.show();
+    }
+
 
     int sumPlayerHP(int id) {
         int sum = 0;
