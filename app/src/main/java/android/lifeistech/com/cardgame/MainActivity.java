@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -252,38 +253,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void damage(int num) {
+        int result = 0;
         int damage = 0;
+        double critical = 1.0;
+        Random r = new Random();
+        if(r.nextInt(100)<10) {
+            critical *= 1.5;
+            addLog("クリティカル発動！");
+        }
+
         if (nowPlayer == 1) {
-            damage = p2CharacterList.get(num).getBP() - p1CharacterList.get(selectCharacterNum).getAP();
-            if (damage < 0) {
+            damage = (int)(p1CharacterList.get(selectCharacterNum).getAP() * critical);
+            result = p2CharacterList.get(num).getBP() - damage;
+            if (result < 0) {
                 if (p2CharacterList.get(num).getBP() != 0) {
                     addLog(p2CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p2CharacterList.get(num).setBP(0);
                 }
-                player2.setHP(player2.getHP() + damage);
-                addLog("プレイヤー2に" + (-1 * damage) + "ダメージ");
+                player2.setHP(player2.getHP() + result);
+                addLog("プレイヤー2に" + (-1 * result) + "ダメージ");
                 if(player2.getHP() <=0){
                     addLog("プレイヤー1の勝利！");
                 }
             } else {
-                addLog(p2CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
-                p2CharacterList.get(num).setBP(damage);
+                addLog(p2CharacterList.get(num).getName() + "に" + damage + "ダメージ");
+                p2CharacterList.get(num).setBP(result);
             }
         } else {
-            damage = p1CharacterList.get(num).getBP() - p2CharacterList.get(selectCharacterNum).getAP();
-            if (damage < 0) {
+            damage = (int)(p2CharacterList.get(selectCharacterNum).getAP() * critical);
+            result = p1CharacterList.get(num).getBP() - damage;
+            if (result < 0) {
                 if (p1CharacterList.get(num).getBP() != 0) {
                     addLog(p1CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p1CharacterList.get(num).setBP(0);
                 }
-                player1.setHP(player1.getHP() + damage);
-                addLog("プレイヤー1に" + (-1 * damage) + "ダメージ");
+                player1.setHP(player1.getHP() + result);
+                addLog("プレイヤー1に" + (-1 * result) + "ダメージ");
                 if(player1.getHP() <=0){
                     addLog("プレイヤー2の勝利！");
                 }
             } else {
-                addLog(p1CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getAP() + "ダメージ");
-                p1CharacterList.get(num).setBP(damage);
+                addLog(p1CharacterList.get(num).getName() + "に" + damage + "ダメージ");
+                p1CharacterList.get(num).setBP(result);
             }
         }
     }
