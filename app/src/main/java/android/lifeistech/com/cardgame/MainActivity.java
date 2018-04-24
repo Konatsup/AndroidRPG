@@ -256,14 +256,16 @@ public class MainActivity extends AppCompatActivity {
         int result = 0;
         int damage = 0;
         double critical = 1.0;
+        double scale; //弱点補正
         Random r = new Random();
-        if(r.nextInt(100)<10) {
+        if (r.nextInt(100) < 10) {
             critical *= 1.5;
             addLog("クリティカル発動！");
         }
 
         if (nowPlayer == 1) {
-            damage = (int)(p1CharacterList.get(selectCharacterNum).getAP() * critical);
+            scale = calcRelationScale(p1CharacterList.get(selectCharacterNum).getPropID(), p2CharacterList.get(num).getPropID());
+            damage = (int) (p1CharacterList.get(selectCharacterNum).getAP() * scale * critical);
             result = p2CharacterList.get(num).getBP() - damage;
             if (result < 0) {
                 if (p2CharacterList.get(num).getBP() != 0) {
@@ -272,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 player2.setHP(player2.getHP() + result);
                 addLog("プレイヤー2に" + (-1 * result) + "ダメージ");
-                if(player2.getHP() <=0){
+                if (player2.getHP() <= 0) {
                     addLog("プレイヤー1の勝利！");
                 }
             } else {
@@ -280,7 +282,8 @@ public class MainActivity extends AppCompatActivity {
                 p2CharacterList.get(num).setBP(result);
             }
         } else {
-            damage = (int)(p2CharacterList.get(selectCharacterNum).getAP() * critical);
+            scale = calcRelationScale(p2CharacterList.get(selectCharacterNum).getPropID(), p1CharacterList.get(num).getPropID());
+            damage = (int) (p2CharacterList.get(selectCharacterNum).getAP() * scale * critical);
             result = p1CharacterList.get(num).getBP() - damage;
             if (result < 0) {
                 if (p1CharacterList.get(num).getBP() != 0) {
@@ -289,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 player1.setHP(player1.getHP() + result);
                 addLog("プレイヤー1に" + (-1 * result) + "ダメージ");
-                if(player1.getHP() <=0){
+                if (player1.getHP() <= 0) {
                     addLog("プレイヤー2の勝利！");
                 }
             } else {
@@ -306,15 +309,41 @@ public class MainActivity extends AppCompatActivity {
             tmp = p1CharacterList.get(selectCharacterNum);
             p1CharacterList.set(selectCharacterNum, p1CharacterList.get(num));
             p1CharacterList.set(num, tmp);
-            addLog(p1CharacterList.get(selectCharacterNum).getName()+"が戻り");
-            addLog(p1CharacterList.get(num).getName()+"が召喚されました");
+            addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り");
+            addLog(p1CharacterList.get(num).getName() + "が召喚されました");
         } else {
             tmp = p2CharacterList.get(selectCharacterNum);
             p2CharacterList.set(selectCharacterNum, p2CharacterList.get(num));
             p2CharacterList.set(num, tmp);
-            addLog(p2CharacterList.get(selectCharacterNum).getName()+"が戻り");
-            addLog(p2CharacterList.get(num).getName()+"が召喚されました");
+            addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り");
+            addLog(p2CharacterList.get(num).getName() + "が召喚されました");
         }
+    }
+
+    double calcRelationScale(int prop1, int prop2) {
+        double scale = 1.0;
+        switch (prop1) {
+            case 1:
+                if (prop2 == 2) scale = 0.75;
+                else if (prop2 == 3) scale = 1.5;
+                break;
+            case 2:
+                if (prop2 == 3) scale = 0.75;
+                else if (prop2 == 1) scale = 1.5;
+                break;
+            case 3:
+                if (prop2 == 1) scale = 0.75;
+                else if (prop2 == 2) scale = 1.5;
+                break;
+            case 4:
+                if (prop2 == 5) scale = 1.5;
+                break;
+            case 5:
+                if (prop2 == 4) scale = 1.5;
+                break;
+
+        }
+        return scale;
     }
 
     //属性の色を取得する
