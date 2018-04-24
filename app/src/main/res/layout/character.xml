@@ -30,6 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="#ffdede"
                 android:gravity="center"
                 android:text="TextView" />
 
@@ -39,6 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="#dedeff"
                 android:gravity="center"
                 android:text="TextView" />
         </LinearLayout>
