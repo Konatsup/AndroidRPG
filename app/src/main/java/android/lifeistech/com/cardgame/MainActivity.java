@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     int nowPlayer;
     GameState gameState; //キャラクタータップ時の状態 1~
     int selectCharacterNum;
+    int turnCount;
 
     ArrayList<String> logList = new ArrayList<>();
 
@@ -79,8 +80,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //インスタンス生成
-
-
         p1CharacterList.add(new Character(5, 3, 2, 1, R.drawable.fire, "炎のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 2, R.drawable.drop, "水のキャラクター", false));
         p1CharacterList.add(new Character(5, 3, 2, 3, R.drawable.tree, "木のキャラクター", false));
@@ -101,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         nowPlayer = 1;
         selectCharacterNum = 0;
+        turnCount = 1;
         gameState = GameState.SELECT_ACTION;
 
         changeShadowStates(3);
@@ -129,9 +129,9 @@ public class MainActivity extends AppCompatActivity {
                             gameState = GameState.SELECT_TARGET;
                             break;
                         case SELECT_TARGET:
-                            changeShadowStates(3);
                             if (selectCharacterNum == num) {
                                 //キャンセル処理
+                                changeShadowStates(3);
                                 renderShadowFromActCompleted();
                             } else {
                                 //自陣とベンチの入れ替え処理
@@ -139,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
 
                                 //次のターンに移行
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
+                                changeShadowStates(3);
+                                renderShadowFromActCompleted();
+                                turnCount++;
+                                resetPhaseIfNeeded();
                                 renderText();
                                 addLog("プレイヤー" + nowPlayer + "のターン");
                             }
@@ -173,6 +177,8 @@ public class MainActivity extends AppCompatActivity {
                                 nowPlayer = nowPlayer == 1 ? 2 : 1;
                                 changeShadowStates(3);
                                 renderShadowFromActCompleted();
+                                turnCount++;
+                                resetPhaseIfNeeded();
                                 renderText();
                                 addLog("プレイヤー" + nowPlayer + "のターン");
                                 gameState = GameState.SELECT_ACTION;
@@ -281,6 +287,8 @@ public class MainActivity extends AppCompatActivity {
                 addLog(p2CharacterList.get(num).getName() + "に" + damage + "ダメージ");
                 p2CharacterList.get(num).setBP(result);
             }
+            p1CharacterList.get(selectCharacterNum).setActCompleted(true);
+
         } else {
             scale = calcRelationScale(p2CharacterList.get(selectCharacterNum).getPropID(), p1CharacterList.get(num).getPropID());
             damage = (int) (p2CharacterList.get(selectCharacterNum).getAP() * scale * critical);
@@ -299,6 +307,7 @@ public class MainActivity extends AppCompatActivity {
                 addLog(p1CharacterList.get(num).getName() + "に" + damage + "ダメージ");
                 p1CharacterList.get(num).setBP(result);
             }
+            p2CharacterList.get(selectCharacterNum).setActCompleted(true);
         }
     }
 
@@ -311,12 +320,15 @@ public class MainActivity extends AppCompatActivity {
             p1CharacterList.set(num, tmp);
             addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り");
             addLog(p1CharacterList.get(num).getName() + "が召喚されました");
+            p1CharacterList.get(num).setActCompleted(true);
+
         } else {
             tmp = p2CharacterList.get(selectCharacterNum);
             p2CharacterList.set(selectCharacterNum, p2CharacterList.get(num));
             p2CharacterList.set(num, tmp);
             addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り");
             addLog(p2CharacterList.get(num).getName() + "が召喚されました");
+            p2CharacterList.get(num).setActCompleted(true);
         }
     }
 
@@ -387,6 +399,18 @@ public class MainActivity extends AppCompatActivity {
         adapter.add(text);
         logList.add(text);
         listView.setSelection(logList.size());
+    }
+
+    void resetPhaseIfNeeded() {
+        if (turnCount > 8) {
+            turnCount = 1;
+            for (int i = 0; i < 6; i++) {
+                p1CharacterList.get(i).setActCompleted(false);
+                p2CharacterList.get(i).setActCompleted(false);
+                playerShadowList[i].setVisibility(View.INVISIBLE);
+            }
+            addLog("フェーズがリセットされました");
+        }
     }
 
     void renderShadowFromActCompleted() {
