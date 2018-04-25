@@ -53,6 +53,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:onClick="intentOnlineBattleActivity"
         android:text="2人で対戦(Bluetooth)"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"

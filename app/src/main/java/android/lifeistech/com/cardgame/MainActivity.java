@@ -300,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
             result = p2CharacterList.get(num).getBP() - damage;
             if (result < 0) {
                 if (p2CharacterList.get(num).getBP() != 0) {
+                    addLog(p1CharacterList.get(selectCharacterNum).getName() + "の攻撃");
                     addLog(p2CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p2CharacterList.get(num).setBP(0);
                 }
@@ -320,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
             result = p1CharacterList.get(num).getBP() - damage;
             if (result < 0) {
                 if (p1CharacterList.get(num).getBP() != 0) {
+                    addLog(p2CharacterList.get(selectCharacterNum).getName() + "の攻撃");
                     addLog(p1CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p1CharacterList.get(num).setBP(0);
                 }
