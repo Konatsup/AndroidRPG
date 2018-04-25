@@ -428,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void resetPhaseIfNeeded() {
-        if (turnCount > 8) {
+        if (turnCount > 9) {
             turnCount = 1;
             for (int i = 0; i < 6; i++) {
                 p1CharacterList.get(i).setActCompleted(false);

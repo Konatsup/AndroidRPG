@@ -2,8 +2,11 @@ package android.lifeistech.com.cardgame;
 
 import android.graphics.Color;
 import android.os.Handler;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ViewAnimator;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -53,6 +57,13 @@ public class OnlineBattleActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            BluetoothChatFragment fragment = new BluetoothChatFragment();
+            transaction.replace(R.id.sample_main_layout, fragment);
+            transaction.commit();
+        }
+
         mHandler = new Handler();
 
         playerHPText = (TextView) findViewById(R.id.playerHPText);
@@ -430,7 +441,7 @@ public class OnlineBattleActivity extends AppCompatActivity {
     }
 
     void resetPhaseIfNeeded() {
-        if (turnCount > 8) {
+        if (turnCount > 9) {
             turnCount = 1;
             for (int i = 0; i < 6; i++) {
                 p1CharacterList.get(i).setActCompleted(false);
