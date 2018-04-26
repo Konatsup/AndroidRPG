@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -21,8 +22,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
-public class OnlineBattleActivity extends AppCompatActivity {
+public class OnlineBattleActivity extends AppCompatActivity implements BluetoothChatFragment.BluetoothChatFragmentListener {
 
+    LinearLayout originShadow;
     TextView playerHPText, enemyHPText;
     FrameLayout[] playerLayoutList = new FrameLayout[6];
     TextView[] playerAPTextList = new TextView[6];
@@ -36,6 +38,7 @@ public class OnlineBattleActivity extends AppCompatActivity {
     ImageView[] enemyImageList = new ImageView[4];
     LinearLayout[] enemyShadowList = new LinearLayout[4];
 
+
     ListView listView;
     ArrayAdapter<String> adapter;
 
@@ -45,13 +48,17 @@ public class OnlineBattleActivity extends AppCompatActivity {
     ArrayList<Character> p2CharacterList = new ArrayList<>();
 
     int nowPlayer;
+    int myPlayer;
     GameState gameState; //キャラクタータップ時の状態 1~
     int selectCharacterNum; //何番目のキャラクターが行動したか
     int turnCount; //何ターン目か
     int logCount;
+    boolean isMyTurn;
 
     ArrayList<String> logList = new ArrayList<>();
     Handler mHandler;
+
+    BluetoothChatFragment bluetoothChatFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,13 +66,14 @@ public class OnlineBattleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            BluetoothChatFragment fragment = new BluetoothChatFragment();
-            transaction.replace(R.id.sample_main_layout, fragment);
+            bluetoothChatFragment = new BluetoothChatFragment();
+            transaction.replace(R.id.sample_main_layout, bluetoothChatFragment);
             transaction.commit();
         }
 
         mHandler = new Handler();
 
+        originShadow = (LinearLayout) findViewById(R.id.originShadow);
         playerHPText = (TextView) findViewById(R.id.playerHPText);
         enemyHPText = (TextView) findViewById(R.id.enemyHPText);
         listView = (ListView) findViewById(R.id.listView);
@@ -113,13 +121,13 @@ public class OnlineBattleActivity extends AppCompatActivity {
         player2 = new Player(2, sumPlayerHP(2), 2);
 
 
-        nowPlayer = 1; //とりあえずプレイヤー1からスタート
-        selectCharacterNum = 0;
-        turnCount = 1;
-        logCount = 0;
-        gameState = GameState.SELECT_ACTION;
-        addLog("戦闘開始");
-        renderTurnEndAction();
+        originShadow.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+
 
         for (int i = 0; i < 6; i++) {
             final int num = i;
@@ -127,31 +135,13 @@ public class OnlineBattleActivity extends AppCompatActivity {
             playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int touchState = getTouchState(num);
                     switch (gameState) {
                         case SELECT_ACTION:
 
-                            selectCharacterNum = num;
-
-                            changeShadowStates(touchState);
-                            playerShadowList[num].setVisibility(View.INVISIBLE);
-
-                            gameState = GameState.SELECT_TARGET;
+                            playerSelectAction(num);
                             break;
                         case SELECT_TARGET:
-                            if (selectCharacterNum == num) {
-                                //キャンセル処理
-                                changeShadowStates(3);
-                                renderShadowFromActCompleted();
-                            } else {
-                                //自陣とベンチの入れ替え処理
-                                exchange(num);
-
-                                //次のターンに移行
-                                nowPlayer = nowPlayer == 1 ? 2 : 1;
-                                renderTurnEndAction();
-                            }
-                            gameState = GameState.SELECT_ACTION;
+                            playerSelectTarget(selectCharacterNum, num);
                             break;
                         default:
                             break;
@@ -175,13 +165,7 @@ public class OnlineBattleActivity extends AppCompatActivity {
                             case SELECT_ACTION:
                                 break;
                             case SELECT_TARGET:
-                                //ダメージ計算
-                                damage(num);
-
-                                //次のターンに移行
-                                nowPlayer = nowPlayer == 1 ? 2 : 1;
-                                renderTurnEndAction();
-                                gameState = GameState.SELECT_ACTION;
+                                enemySelectTarget(selectCharacterNum, num);
                                 break;
                             default:
                                 break;
@@ -200,6 +184,51 @@ public class OnlineBattleActivity extends AppCompatActivity {
 
 
             }
+
+        }
+
+    }
+
+
+    void playerSelectAction(int num) {
+        selectCharacterNum = num;
+
+        changeShadowStates(getTouchState(num));
+        playerShadowList[num].setVisibility(View.INVISIBLE);
+
+        gameState = GameState.SELECT_TARGET;
+    }
+
+    void playerSelectTarget(int selectCharacterNum, int num) {
+        if (selectCharacterNum == num) {
+            //キャンセル処理
+            changeShadowStates(3);
+            renderShadowFromActCompleted();
+        } else {
+            //自陣とベンチの入れ替え処理
+            exchange(selectCharacterNum, num);
+
+            //次のターンに移行
+            nowPlayer = nowPlayer == 1 ? 2 : 1;
+            renderTurnEndAction();
+        }
+        if (nowPlayer != myPlayer) {
+            gameState = GameState.SELECT_ACTION;
+            bluetoothChatFragment.sendMessage(String.valueOf(selectCharacterNum));
+        }
+    }
+
+    void enemySelectTarget(int selectCharacterNum, int num) {
+        //ダメージ計算
+        damage(num);
+
+        //次のターンに移行
+        nowPlayer = nowPlayer == 1 ? 2 : 1;
+        renderTurnEndAction();
+        gameState = GameState.SELECT_ACTION;
+        if (nowPlayer != myPlayer) {
+            String message = String.valueOf(selectCharacterNum) + String.valueOf(num);
+            bluetoothChatFragment.sendMessage(message);
 
         }
 
@@ -224,7 +253,7 @@ public class OnlineBattleActivity extends AppCompatActivity {
     }
 
     void showPlayerDialog() {
-        SampleDialogFragment fragment = SampleDialogFragment.newInstance(nowPlayer,logList,logCount);
+        SampleDialogFragment fragment = SampleDialogFragment.newInstance(nowPlayer, logList, logCount);
         fragment.show(getFragmentManager(), "tag");
         TurnEndThread thread = new TurnEndThread();
         thread.start();
@@ -234,6 +263,8 @@ public class OnlineBattleActivity extends AppCompatActivity {
     public void renderTurnEndAction() {
         changeShadowStates(3);
         renderShadowFromActCompleted();
+        isMyTurn = (nowPlayer == myPlayer) ? true : false;
+        setShadow(isMyTurn);
         turnCount++;
         resetPhaseIfNeeded();
         renderText();
@@ -351,21 +382,21 @@ public class OnlineBattleActivity extends AppCompatActivity {
         }
     }
 
-    void exchange(int num) {
+    void exchange(int selectCharacterNum, int num) {
 
         Character tmp;
         if (nowPlayer == 1) {
             tmp = p1CharacterList.get(selectCharacterNum);
             p1CharacterList.set(selectCharacterNum, p1CharacterList.get(num));
             p1CharacterList.set(num, tmp);
-            addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り、"+p1CharacterList.get(num).getName() + "が召喚されました");
+            addLog(p1CharacterList.get(selectCharacterNum).getName() + "が戻り、" + p1CharacterList.get(num).getName() + "が召喚されました");
             p1CharacterList.get(num).setActCompleted(true);
 
         } else {
             tmp = p2CharacterList.get(selectCharacterNum);
             p2CharacterList.set(selectCharacterNum, p2CharacterList.get(num));
             p2CharacterList.set(num, tmp);
-            addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り、"+p2CharacterList.get(num).getName() + "が召喚されました");
+            addLog(p2CharacterList.get(selectCharacterNum).getName() + "が戻り、" + p2CharacterList.get(num).getName() + "が召喚されました");
             p2CharacterList.get(num).setActCompleted(true);
         }
     }
@@ -497,9 +528,61 @@ public class OnlineBattleActivity extends AppCompatActivity {
         }
     }
 
+
+    public void setShadow(boolean b) {
+//        originShadow.setVisibility((b == false) ? View.VISIBLE : View.INVISIBLE);
+    }
+
     public enum GameState {
         SELECT_ACTION,
         SELECT_TARGET
     }
+
+
+    @Override
+    public void sendWriteMessage(int num) {
+//        int d1 = num%10; //1桁目(Target)
+//        int d10 = num/10; //2桁目(Action)
+//
+//        if(d10 >=4){
+//            playerSelectTarget(d10, d1);
+//        }else {
+//            enemySelectTarget(d10,d1);
+//        }
+    }
+
+    @Override
+    public void sendReadMessage(int num) {
+        int d1 = num % 10; //1桁目(Target)
+        int d10 = num / 10; //2桁目(Action)
+        if (nowPlayer != myPlayer) {
+            if (d10 >= 4) {
+                playerSelectTarget(d10, d1);
+            } else {
+                enemySelectTarget(d10, d1);
+            }
+        }
+    }
+
+    @Override
+    public void setMyPlayer(int num) {
+        myPlayer = num;
+    }
+
+    @Override
+    public void gameStart() {
+        Log.d("aaaaaaa", "GAME_START");
+
+        nowPlayer = 1;
+        selectCharacterNum = 0;
+        logCount = 0;
+        gameState = GameState.SELECT_ACTION;
+        addLog("戦闘開始");
+        renderTurnEndAction();
+        turnCount = 0;
+
+    }
+
+
 }
 

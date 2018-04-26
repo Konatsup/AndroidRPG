@@ -28,6 +28,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.ByteBuffer;
+
 
 /**
  * This fragment controls Bluetooth to communicate with other devices.
@@ -74,12 +76,16 @@ public class BluetoothChatFragment extends Fragment {
      */
     private BluetoothChatService mChatService = null;
 
+    private BluetoothChatFragmentListener listener = null;
+
+    private int mPlayerNum = 0;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -101,6 +107,20 @@ public class BluetoothChatFragment extends Fragment {
             // Otherwise, setup the chat session
         } else if (mChatService == null) {
             setupChat();
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // 実装されてなかったらException吐かせて実装者に伝える
+        if (!(activity instanceof BluetoothChatFragmentListener)) {
+            throw new UnsupportedOperationException(
+                    "Listener is not Implementation.");
+        } else {
+            // ここでActivityのインスタンスではなくActivityに実装されたイベントリスナを取得
+            listener = (BluetoothChatFragmentListener) activity;
         }
     }
 
@@ -139,8 +159,8 @@ public class BluetoothChatFragment extends Fragment {
         mSecureButton = (Button) view.findViewById(R.id.secureButton);
         mInsecureButton = (Button) view.findViewById(R.id.insecureButton);
         mDiscoverableButton = (Button) view.findViewById(R.id.discoverableButton);
-        mGameStartButton = (Button)view.findViewById(R.id.gameStartButton);
-        mFrameLayout = (FrameLayout)view.findViewById(R.id.layout);
+        mGameStartButton = (Button) view.findViewById(R.id.gameStartButton);
+        mFrameLayout = (FrameLayout) view.findViewById(R.id.layout);
     }
 
     /**
@@ -173,6 +193,8 @@ public class BluetoothChatFragment extends Fragment {
 
         mSecureButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                mPlayerNum = 1;
+                listener.setMyPlayer(mPlayerNum);
                 Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
 
@@ -225,6 +247,7 @@ public class BluetoothChatFragment extends Fragment {
             Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
             return;
         }
+        listener.gameStart();
         mFrameLayout.setVisibility(View.INVISIBLE);
     }
 
@@ -233,7 +256,7 @@ public class BluetoothChatFragment extends Fragment {
      *
      * @param message A string of text to send.
      */
-    private void sendMessage(String message) {
+    public void sendMessage(String message) {
         // Check that we're actually connected before trying anything
         if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
@@ -247,10 +270,11 @@ public class BluetoothChatFragment extends Fragment {
             mChatService.write(send);
 
             // Reset out string buffer to zero and clear the edit text field
-            mOutStringBuffer.setLength(0);
+//            mOutStringBuffer.setLength(0);
 //            mOutEditText.setText(mOutStringBuffer);
         }
     }
+
 
     /**
      * The action listener for the EditText widget, to listen for the return key
@@ -328,17 +352,30 @@ public class BluetoothChatFragment extends Fragment {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
+
+                    Log.d("aaaaaaaaWriteMessage",writeMessage);
+//                    int writeNum = Integer.parseInt(writeMessage);
+//                    listener.sendWriteMessage(writeNum);
 //                    mConversationArrayAdapter.add("Me:  " + writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
+//                    listener.sendReadMessage();
                     // construct a string from the valid bytes in the buffer
-//                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    Log.d("aaaaaaaaReadMessage",readMessage);
+                    int readNum = Integer.parseInt(readMessage);
+                    listener.sendReadMessage(readNum);
+
 //                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
+                    if(mPlayerNum != 1){
+                        mPlayerNum = 2;
+                        listener.setMyPlayer(mPlayerNum);
+                    }
                     if (null != activity) {
                         Toast.makeText(activity, "Connected to "
                                 + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
@@ -399,34 +436,14 @@ public class BluetoothChatFragment extends Fragment {
         mChatService.connect(device, secure);
     }
 
-//    @Override
-//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        inflater.inflate(R.menu.bluetooth_chat, menu);
-//    }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.secure_connect_scan: {
-//                // Launch the DeviceListActivity to see devices and do scan
-//                Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
-//                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-//                return true;
-//            }
-//            case R.id.insecure_connect_scan: {
-//                // Launch the DeviceListActivity to see devices and do scan
-//                Log.d("aaaaaaaa", "INSECURE");
-//                Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
-//                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_INSECURE);
-//                return true;
-//            }
-//            case R.id.discoverable: {
-//                // Ensure this device is discoverable by others
-//                ensureDiscoverable();
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    public interface BluetoothChatFragmentListener {
+        void sendWriteMessage(int i);
+        void sendReadMessage(int i);
+        void setMyPlayer(int playerNum);
+        void gameStart();
+
+    }
+
 
 }
