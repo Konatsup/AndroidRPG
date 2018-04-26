@@ -179,17 +179,6 @@ public class BluetoothChatFragment extends Fragment {
 
         // Initialize the send button with a listener that for click events
 
-//        mSendButton.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                // Send a message using content of the edit text widget
-//                View view = getView();
-//                if (null != view) {
-//                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
-//                    String message = textView.getText().toString();
-//                    sendMessage(message);
-//                }
-//            }
-//        });
 
         mSecureButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -349,21 +338,16 @@ public class BluetoothChatFragment extends Fragment {
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
+//                    byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
+//                    String writeMessage = new String(writeBuf);
 
-                    Log.d("aaaaaaaaWriteMessage",writeMessage);
-//                    int writeNum = Integer.parseInt(writeMessage);
-//                    listener.sendWriteMessage(writeNum);
 //                    mConversationArrayAdapter.add("Me:  " + writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
-//                    listener.sendReadMessage();
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    Log.d("aaaaaaaaReadMessage",readMessage);
                     int readNum = Integer.parseInt(readMessage);
                     listener.sendReadMessage(readNum);
 
@@ -438,7 +422,6 @@ public class BluetoothChatFragment extends Fragment {
 
 
     public interface BluetoothChatFragmentListener {
-        void sendWriteMessage(int i);
         void sendReadMessage(int i);
         void setMyPlayer(int playerNum);
         void gameStart();

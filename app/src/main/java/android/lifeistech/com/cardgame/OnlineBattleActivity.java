@@ -204,6 +204,7 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
             //キャンセル処理
             changeShadowStates(3);
             renderShadowFromActCompleted();
+            gameState = GameState.SELECT_ACTION;
         } else {
             //自陣とベンチの入れ替え処理
             exchange(selectCharacterNum, num);
@@ -211,16 +212,19 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
             //次のターンに移行
             nowPlayer = nowPlayer == 1 ? 2 : 1;
             renderTurnEndAction();
-        }
-        if (nowPlayer != myPlayer) {
             gameState = GameState.SELECT_ACTION;
-            bluetoothChatFragment.sendMessage(String.valueOf(selectCharacterNum));
+            if (nowPlayer != myPlayer) {
+                String message = String.valueOf(selectCharacterNum) + String.valueOf(num);
+                bluetoothChatFragment.sendMessage(message);
+            }
+
         }
+
     }
 
     void enemySelectTarget(int selectCharacterNum, int num) {
         //ダメージ計算
-        damage(num);
+        damage(selectCharacterNum, num);
 
         //次のターンに移行
         nowPlayer = nowPlayer == 1 ? 2 : 1;
@@ -289,7 +293,7 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
 
     void renderText() {
 
-        if (nowPlayer == 1) {
+        if (myPlayer == 1) {
             for (int i = 0; i < 6; i++) {
                 playerAPTextList[i].setText(p1CharacterList.get(i).getAP() + "");
                 playerBPTextList[i].setText(p1CharacterList.get(i).getBP() + "");
@@ -325,25 +329,24 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
         }
     }
 
-    void damage(int num) {
+    void damage(int selectCharacterNum, int num) {
         int result = 0;
         int damage = 0;
         double critical = 1.0;
         double scale; //弱点補正
         Random r = new Random();
-        if (r.nextInt(100) < 10) {
-            critical *= 1.5;
-            addLog("クリティカル発動！");
-        }
+//        if (r.nextInt(100) < 10) {
+//            critical *= 1.5;
+//            addLog("クリティカル発動！");
+//        }
 
         if (nowPlayer == 1) {
             scale = calcRelationScale(p1CharacterList.get(selectCharacterNum).getPropID(), p2CharacterList.get(num).getPropID());
             damage = (int) (p1CharacterList.get(selectCharacterNum).getAP() * scale * critical);
             result = p2CharacterList.get(num).getBP() - damage;
+            addLog(p1CharacterList.get(selectCharacterNum).getName() + "の攻撃");
             if (result < 0) {
                 if (p2CharacterList.get(num).getBP() != 0) {
-
-                    addLog(p1CharacterList.get(selectCharacterNum).getName() + "の攻撃");
                     addLog(p2CharacterList.get(num).getName() + "に" + p2CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p2CharacterList.get(num).setBP(0);
                 }
@@ -351,6 +354,7 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
                 addLog("プレイヤー2に" + (-1 * result) + "ダメージ");
                 if (player2.getHP() <= 0) {
                     addLog("プレイヤー1の勝利！");
+                    setShadow(false);
                 }
             } else {
                 addLog(p2CharacterList.get(num).getName() + "に" + damage + "ダメージ");
@@ -362,10 +366,10 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
             scale = calcRelationScale(p2CharacterList.get(selectCharacterNum).getPropID(), p1CharacterList.get(num).getPropID());
             damage = (int) (p2CharacterList.get(selectCharacterNum).getAP() * scale * critical);
             result = p1CharacterList.get(num).getBP() - damage;
+            addLog(p2CharacterList.get(selectCharacterNum).getName() + "の攻撃");
             if (result < 0) {
                 if (p1CharacterList.get(num).getBP() != 0) {
 
-                    addLog(p2CharacterList.get(selectCharacterNum).getName() + "の攻撃");
                     addLog(p1CharacterList.get(num).getName() + "に" + p1CharacterList.get(selectCharacterNum).getBP() + "ダメージ");
                     p1CharacterList.get(num).setBP(0);
                 }
@@ -373,6 +377,7 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
                 addLog("プレイヤー1に" + (-1 * result) + "ダメージ");
                 if (player1.getHP() <= 0) {
                     addLog("プレイヤー2の勝利！");
+                    setShadow(false);
                 }
             } else {
                 addLog(p1CharacterList.get(num).getName() + "に" + damage + "ダメージ");
@@ -472,8 +477,8 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
     }
 
     void resetPhaseIfNeeded() {
-        if (turnCount > 9) {
-            turnCount = 1;
+        if (turnCount > 7) {
+            turnCount = 0;
             for (int i = 0; i < 6; i++) {
                 p1CharacterList.get(i).setActCompleted(false);
                 p2CharacterList.get(i).setActCompleted(false);
@@ -530,25 +535,12 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
 
 
     public void setShadow(boolean b) {
-//        originShadow.setVisibility((b == false) ? View.VISIBLE : View.INVISIBLE);
+        originShadow.setVisibility((b == false) ? View.VISIBLE : View.INVISIBLE);
     }
 
     public enum GameState {
         SELECT_ACTION,
         SELECT_TARGET
-    }
-
-
-    @Override
-    public void sendWriteMessage(int num) {
-//        int d1 = num%10; //1桁目(Target)
-//        int d10 = num/10; //2桁目(Action)
-//
-//        if(d10 >=4){
-//            playerSelectTarget(d10, d1);
-//        }else {
-//            enemySelectTarget(d10,d1);
-//        }
     }
 
     @Override
