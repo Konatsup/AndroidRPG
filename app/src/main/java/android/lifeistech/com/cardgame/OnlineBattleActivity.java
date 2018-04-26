@@ -214,8 +214,8 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
             renderTurnEndAction();
             gameState = GameState.SELECT_ACTION;
             if (nowPlayer != myPlayer) {
-                String message = String.valueOf(selectCharacterNum) + String.valueOf(num);
-                bluetoothChatFragment.sendMessage(message);
+                String message = "1-"+String.valueOf(selectCharacterNum) + String.valueOf(num);
+                bluetoothChatFragment.sendMessageText(message);
             }
 
         }
@@ -231,8 +231,8 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
         renderTurnEndAction();
         gameState = GameState.SELECT_ACTION;
         if (nowPlayer != myPlayer) {
-            String message = String.valueOf(selectCharacterNum) + String.valueOf(num);
-            bluetoothChatFragment.sendMessage(message);
+            String message = "1-" + String.valueOf(selectCharacterNum) + String.valueOf(num);
+            bluetoothChatFragment.sendMessageText(message);
 
         }
 
@@ -572,6 +572,12 @@ public class OnlineBattleActivity extends AppCompatActivity implements Bluetooth
         addLog("戦闘開始");
         renderTurnEndAction();
         turnCount = 0;
+
+    }
+
+    @Override
+    public void setPlayerId(int id){
+
 
     }
 

@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 
 /**
@@ -78,14 +79,15 @@ public class BluetoothChatFragment extends Fragment {
 
     private BluetoothChatFragmentListener listener = null;
 
-    private int mPlayerNum = 0;
+    private int mPlayerNum;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
+        mPlayerNum = -2147483647;
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -182,8 +184,6 @@ public class BluetoothChatFragment extends Fragment {
 
         mSecureButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mPlayerNum = 1;
-                listener.setMyPlayer(mPlayerNum);
                 Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
 
@@ -245,7 +245,7 @@ public class BluetoothChatFragment extends Fragment {
      *
      * @param message A string of text to send.
      */
-    public void sendMessage(String message) {
+    public void sendMessageText(String message) {
         // Check that we're actually connected before trying anything
         if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
             Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
@@ -274,7 +274,7 @@ public class BluetoothChatFragment extends Fragment {
             // If the action is a key-up event on the return key, send the message
             if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_UP) {
                 String message = view.getText().toString();
-                sendMessage(message);
+                sendMessageText(message);
             }
             return true;
         }
@@ -346,20 +346,42 @@ public class BluetoothChatFragment extends Fragment {
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
+                    // construct a string from the valid bytes in the buffe
+
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    int readNum = Integer.parseInt(readMessage);
-                    listener.sendReadMessage(readNum);
+                    String[] str = readMessage.split("-");
+                    int readNum = Integer.parseInt(str[1]);
+                    switch (str[0]) {
+                        case "0":
+                            Log.d("aaaaaa",mPlayerNum + ":" + readNum);
+                            if(mPlayerNum > readNum){
+                                Log.d("aaa",1+"");
+                                listener.setMyPlayer(1); //大きい方を1に
+                            }else{
+                                Log.d("aaa",2+"");
+                                listener.setMyPlayer(2); //小さい方を2に
+                            }
+                            break;
+                        case "1":
+                            Log.d("aaaaaaa!", readNum + "");
+                            listener.sendReadMessage(readNum);
+                            break;
+                        default:
+                            break;
+                    }
+
 
 //                    mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
-                    if(mPlayerNum != 1){
-                        mPlayerNum = 2;
-                        listener.setMyPlayer(mPlayerNum);
-                    }
+
+                    Random r = new Random();
+                    int n = r.nextInt(2147483646) + 1;
+                    mPlayerNum = n;
+                    String s = "0-" + String.valueOf(n);
+                    sendMessageText(s);
                     if (null != activity) {
                         Toast.makeText(activity, "Connected to "
                                 + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
@@ -423,8 +445,12 @@ public class BluetoothChatFragment extends Fragment {
 
     public interface BluetoothChatFragmentListener {
         void sendReadMessage(int i);
+
         void setMyPlayer(int playerNum);
+
         void gameStart();
+
+        void setPlayerId(int id);
 
     }
 
