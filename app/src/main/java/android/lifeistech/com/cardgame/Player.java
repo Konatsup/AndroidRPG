@@ -5,9 +5,9 @@ package android.lifeistech.com.cardgame;
  */
 
 public class Player {
-    int ID;
-    int HP;
-    int skillID;
+    private int ID;
+    private int HP;
+    private int skillID;
 
     Player(int ID, int HP, int skillID) {
         this.ID = ID;
