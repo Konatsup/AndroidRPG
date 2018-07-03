@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             playerLayoutList[num].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int touchState = getTouchState(num);
+                    int touchState = getTouchState(num); //タップしたキャラが控えか場に出てるか
                     switch (gameState) {
                         case SELECT_ACTION:
 
@@ -409,6 +409,7 @@ public class MainActivity extends AppCompatActivity {
         return color;
     }
 
+    /* タップしたキャラが控えかどうかを判定*/
     int getTouchState(int num) {
         int state = 0;
         if (num < 4) {
